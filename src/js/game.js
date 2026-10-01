@@ -245,6 +245,10 @@ function resetPositions( game ) {
   p.nextDir = null;
   game.dotsEaten = 0;
   game.ghosts.forEach( ( g, i ) => {
+    // Progreso irreversible: un fantasma ya liberado conserva el umbral 0 y
+    // sale de inmediato en la siguiente vida, aunque dotsEaten vuelva a 0.
+    // Hay que leer mode ANTES de resetearlo.
+    if ( g.mode !== 'house' ) g.releaseAt = 0;
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
