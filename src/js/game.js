@@ -157,8 +157,12 @@ function ghostTarget( game, g ) {
 function decideGhost( game, g ) {
   const grid = game.grid;
 
+  // Saliendo de la pen se permite el giro de 180: un fantasma que acaba de
+  // subir mirando hacia arriba tiene que poder bajar al siguiente waypoint.
+  // En el resto de modos sigue valiendo la regla de no invertir.
+  const allowed = g.mode === 'leaving' ? () => true : ( dir ) => dir !== OPPOSITE[ g.dir ];
   const options = Object.keys( DIRS ).filter(
-    ( dir ) => dir !== OPPOSITE[ g.dir ] && canMove( grid, g.x, g.y, dir, 'ghost' )
+    ( dir ) => allowed( dir ) && canMove( grid, g.x, g.y, dir, 'ghost' )
   );
   // Sin salida (callejon): permitir el giro de 180.
   const choices = options.length ? options : [ '' + OPPOSITE[ g.dir ] ];
