@@ -185,6 +185,28 @@ function moveGhost( game, g ) {
   const grid = game.grid;
   const width = grid[ 0 ].length;
 
+  // En la pen: bobin vertical y nada mas. La IA no interviene, no se miran
+  // kind, dir ni ningun objetivo. Al alcanzar su umbral de dots comidos el
+  // fantasma pasa a 'leaving' y deja de bobinar.
+  if ( g.mode === 'house' ) {
+    if ( game.dotsEaten >= g.releaseAt ) {
+      g.mode = 'leaving';
+      return;
+    }
+    if ( aligned( g.x ) && aligned( g.y ) ) {
+      g.x = Math.round( g.x );
+      g.y = Math.round( g.y );
+      // Invertir al tocar cada extremo. El bobin no cambia de columna.
+      if ( g.bobDir === 'up' && g.y <= PEN_BOB_TOP ) g.bobDir = 'down';
+      else if ( g.bobDir === 'down' && g.y >= PEN_BOB_BOTTOM ) g.bobDir = 'up';
+      g.dir = g.bobDir;
+    }
+    const bd = DIRS[ g.dir ];
+    g.x += bd.x * g.speed;
+    g.y += bd.y * g.speed;
+    return;
+  }
+
   if ( aligned( g.x ) && aligned( g.y ) ) {
     g.x = Math.round( g.x );
     g.y = Math.round( g.y );
