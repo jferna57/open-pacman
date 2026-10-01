@@ -204,11 +204,15 @@ function resetPositions( game ) {
   p.y = PACMAN_START.y;
   p.dir = 'left';
   p.nextDir = null;
+  game.dotsEaten = 0;
   game.ghosts.forEach( ( g, i ) => {
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
     g.cornerIndex = 0;
+    g.mode = 'house';
+    g.exitStep = 0;
+    g.bobDir = 'up';
   } );
 }
 
