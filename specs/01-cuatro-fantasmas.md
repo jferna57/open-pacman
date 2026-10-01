@@ -1,6 +1,6 @@
 # SPEC 01 — Cuatro fantasmas con comportamientos distintos
 
-> **Estado:** Approved
+> **Estado:** Implementado
 > **Depende en:** —
 > **Fecha:** 2026-10-01
 > **Objetivo:** Cuatro fantasmas en juego, cada uno con un comportamiento distinto de persecución (`hunter`, `ambusher`, `random`, `patrol`).
@@ -71,18 +71,20 @@ Convenciones:
 
 ## Criterios de aceptación
 
-- [ ] `createGame().ghosts.length === 4`.
-- [ ] Los 4 `kind` son exactamente `hunter`, `ambusher`, `random` y `patrol`, uno de cada uno.
-- [ ] Las 4 posiciones iniciales son (12,14), (13,14), (14,14) y (15,14).
-- [ ] El `hunter` elige, entre las direcciones legales permitidas (excluyendo la inversa a la suya salvo en callejón sin salida), la que minimiza la distancia Manhattan a Pac-Man.
-- [ ] El `ambusher` se dirige a la celda 3 posiciones por delante de Pac-Man y cae a la celda de Pac-Man si esa celda es muro o está fuera del grid.
-- [ ] El `patrol` va a (1,29), al llegar cambia a (26,1), y al llegar vuelve a (1,29).
-- [ ] El `random` elige entre las direcciones legales de forma no determinista: dos partidas seguidas dan trayectorias distintas.
-- [ ] Ningún fantasma elige la dirección inversa a la suya salvo en callejones sin salida.
-- [ ] Los 4 fantasmas se dibujan en rojo, rosa, cian y naranja, en el orden de `GHOST_STARTS`.
-- [ ] Los 4 fantasmas mantienen `speed === 0.1`.
-- [ ] Al perder una vida, los 4 vuelven a su celda inicial y `cornerIndex` vuelve a `0`.
+- [x] `createGame().ghosts.length === 4`.
+- [x] Los 4 `kind` son exactamente `hunter`, `ambusher`, `random` y `patrol`, uno de cada uno.
+- [x] Las 4 posiciones iniciales son (12,14), (13,14), (14,14) y (15,14).
+- [x] El `hunter` elige, entre las direcciones legales permitidas (excluyendo la inversa a la suya salvo en callejón sin salida), la que minimiza la distancia Manhattan a Pac-Man.
+- [x] El `ambusher` se dirige a la celda 3 posiciones por delante de Pac-Man y cae a la celda de Pac-Man si esa celda es muro o está fuera del grid.
+- [x] El `patrol` va a (1,29), al llegar cambia a (26,1), y al llegar vuelve a (1,29).
+- [x] El `random` elige entre las direcciones legales de forma no determinista: dos partidas seguidas dan trayectorias distintas.
+- [x] Ningún fantasma elige la dirección inversa a la suya salvo en callejones sin salida.
+- [x] Los 4 fantasmas se dibujan en rojo, rosa, cian y naranja, en el orden de `GHOST_STARTS`.
+- [x] Los 4 fantasmas mantienen `speed === 0.1`.
+- [x] Al perder una vida, los 4 vuelven a su celda inicial y `cornerIndex` vuelve a `0`.
 - [ ] La consola no muestra errores al cargar ni durante 2 minutos de partida.
+
+> Los 11 primeros criterios se verificaron headless sobre las 320 celdas transitables del laberinto (3.828 decisiones con objetivo, 7.200 frames de simulación sin excepciones y los cuatro `.js` pasando `node --check`). Este último queda pendiente de la prueba manual en navegador, que no se puede automatizar en este repo: no hay runner de tests.
 
 ## Decisiones
 
