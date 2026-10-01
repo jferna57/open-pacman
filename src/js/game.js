@@ -29,6 +29,7 @@ function createGame() {
     score: 0,
     lives: 3,
     dotsRemaining: dots,
+    dotsEaten: 0, // sube 1 por cada dot comido; se reinicia al morir
     grid,
     pacman: {
       x: PACMAN_START.x,
@@ -44,6 +45,10 @@ function createGame() {
       speed: GHOST_SPEED,
       kind: g.kind,
       cornerIndex: 0, // solo lo usa 'patrol': alterna entre PATROL_CORNERS
+      releaseAt: g.releaseAt, // dots que hay que comer para sacarlo de la pen
+      mode: 'house',           // 'house' | 'leaving' | 'chase'
+      exitStep: 0,             // indice en PEN_EXIT_PATH, solo si mode === 'leaving'
+      bobDir: 'up',            // sentido del bobin, solo si mode === 'house'
     } ) ),
   };
 }
@@ -101,6 +106,7 @@ function movePacman( game ) {
       grid[ p.y ][ p.x ] = 0;
       game.score += 10;
       game.dotsRemaining--;
+      game.dotsEaten++;
     }
     // Si no puede seguir, se detiene en la celda.
     if ( !canMove( grid, p.x, p.y, p.dir, 'pacman' ) ) return;
