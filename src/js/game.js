@@ -1,6 +1,6 @@
 // game.js
 // Estado y reglas. Depende de globals de maze.js: MAZE, TUNNEL_ROW,
-// PACMAN_START, GHOST_STARTS.
+// PACMAN_START, GHOST_STARTS, PATROL_CORNERS.
 
 const DIRS = {
   left: { x: -1, y: 0 },
@@ -42,6 +42,7 @@ function createGame() {
       dir: 'up',
       speed: GHOST_SPEED,
       kind: g.kind,
+      cornerIndex: 0, // solo lo usa 'patrol': alterna entre PATROL_CORNERS
     } ) ),
   };
 }
@@ -110,9 +111,40 @@ function movePacman( game ) {
   wrapTunnel( p, width );
 }
 
-function decideGhost( game, g ) {
+// Celda objetivo de un fantasma segun su 'kind'. Un kind = un destino, y la
+// direccion se elige minimizando la distancia Manhattan a la celda vecina.
+// Devuelve null para 'random', que no necesita objetivo.
+function ghostTarget( game, g ) {
   const grid = game.grid;
   const p = game.pacman;
+  const px = Math.round( p.x );
+  const py = Math.round( p.y );
+
+  // Persigue directo.
+  if ( g.kind === 'hunter' ) return { x: px, y: py };
+
+  // Se adelanta 3 celdas en la direccion de Pacman.
+  if ( g.kind === 'ambusher' ) {
+    const d = DIRS[ p.dir ];
+    const tx = px + d.x * 3;
+    const ty = py + d.y * 3;
+    // Si la celda es muro o esta fuera del grid, apuntar a Pacman.
+    if ( isWall( grid, tx, ty, 'ghost' ) ) return { x: px, y: py };
+    return { x: tx, y: ty };
+  }
+
+  // Ronda por dos esquinas alternando.
+  if ( g.kind === 'patrol' ) {
+    const corner = PATROL_CORNERS[ g.cornerIndex ];
+    if ( g.x === corner.x && g.y === corner.y ) g.cornerIndex = 1 - g.cornerIndex;
+    return PATROL_CORNERS[ g.cornerIndex ];
+  }
+
+  return null;
+}
+
+function decideGhost( game, g ) {
+  const grid = game.grid;
 
   const options = Object.keys( DIRS ).filter(
     ( dir ) => dir !== OPPOSITE[ g.dir ] && canMove( grid, g.x, g.y, dir, 'ghost' )
@@ -120,25 +152,26 @@ function decideGhost( game, g ) {
   // Sin salida (callejon): permitir el giro de 180.
   const choices = options.length ? options : [ '' + OPPOSITE[ g.dir ] ];
 
-  if ( g.kind === 'hunter' ) {
-    const px = Math.round( p.x );
-    const py = Math.round( p.y );
-    let best = choices[ 0 ];
-    let bestDist = Infinity;
-    for ( const dir of choices ) {
-      const d = DIRS[ dir ];
-      const nx = g.x + d.x;
-      const ny = g.y + d.y;
-      const dist = Math.abs( nx - px ) + Math.abs( ny - py );
-      if ( dist < bestDist ) {
-        bestDist = dist;
-        best = dir;
-      }
-    }
-    g.dir = best;
-  } else {
+  const target = ghostTarget( game, g );
+  // Sin objetivo: errático.
+  if ( !target ) {
     g.dir = choices[ Math.floor( Math.random() * choices.length ) ];
+    return;
   }
+
+  let best = choices[ 0 ];
+  let bestDist = Infinity;
+  for ( const dir of choices ) {
+    const d = DIRS[ dir ];
+    const nx = g.x + d.x;
+    const ny = g.y + d.y;
+    const dist = Math.abs( nx - target.x ) + Math.abs( ny - target.y );
+    if ( dist < bestDist ) {
+      bestDist = dist;
+      best = dir;
+    }
+  }
+  g.dir = best;
 }
 
 function moveGhost( game, g ) {
@@ -168,6 +201,7 @@ function resetPositions( game ) {
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
+    g.cornerIndex = 0;
   } );
 }
 
