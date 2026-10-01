@@ -74,7 +74,7 @@ Convenciones:
 - [ ] `createGame().ghosts.length === 4`.
 - [ ] Los 4 `kind` son exactamente `hunter`, `ambusher`, `random` y `patrol`, uno de cada uno.
 - [ ] Las 4 posiciones iniciales son (12,14), (13,14), (14,14) y (15,14).
-- [ ] El `hunter` reduce la distancia Manhattan a Pac-Man en cada decisión.
+- [ ] El `hunter` elige, entre las direcciones legales permitidas (excluyendo la inversa a la suya salvo en callejón sin salida), la que minimiza la distancia Manhattan a Pac-Man.
 - [ ] El `ambusher` se dirige a la celda 3 posiciones por delante de Pac-Man y cae a la celda de Pac-Man si esa celda es muro o está fuera del grid.
 - [ ] El `patrol` va a (1,29), al llegar cambia a (26,1), y al llegar vuelve a (1,29).
 - [ ] El `random` elige entre las direcciones legales de forma no determinista: dos partidas seguidas dan trayectorias distintas.
