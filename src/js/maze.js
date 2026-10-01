@@ -51,17 +51,35 @@ const MAZE = MAZE_STR.map( ( row ) => row.split( '' ).map( parseTile ) );
 
 const TUNNEL_ROW = 14;
 const PACMAN_START = { x: 13, y: 23 };
+// releaseAt: dots que hay que comer para liberar al fantasma de la pen.
 const GHOST_STARTS = [
-  { x: 12, y: 14, kind: 'hunter' },   // rojo
-  { x: 13, y: 14, kind: 'ambusher' }, // rosa
-  { x: 14, y: 14, kind: 'random' },   // cian
-  { x: 15, y: 14, kind: 'patrol' },   // naranja
+  { x: 12, y: 14, kind: 'hunter', releaseAt: 0 },   // rojo
+  { x: 13, y: 14, kind: 'ambusher', releaseAt: 0 }, // rosa
+  { x: 14, y: 14, kind: 'random', releaseAt: 30 },  // cian
+  { x: 15, y: 14, kind: 'patrol', releaseAt: 60 },  // naranja
 ];
 // Esquinas que alterna el fantasma 'patrol' como destino.
 const PATROL_CORNERS = [ { x: 1, y: 29 }, { x: 26, y: 1 } ];
+
+// Ruta de salida de la pen: centro de la pen, puerta y corredor. Todo recto.
+// Depende de la geometria de las filas 11-14 de MAZE_STR; si esas filas
+// cambian, esta ruta hay que revisarla.
+const PEN_EXIT_PATH = [
+  { x: 13, y: 14 },
+  { x: 13, y: 13 },
+  { x: 13, y: 12 },
+  { x: 13, y: 11 },
+];
+// Filas entre las que bobina un fantasma que aun no ha sido liberado. El
+// bobin pasa por (x,14) por el medio y no cambia de columna.
+const PEN_BOB_TOP = 13;
+const PEN_BOB_BOTTOM = 15;
 
 window.MAZE = MAZE;
 window.TUNNEL_ROW = TUNNEL_ROW;
 window.PACMAN_START = PACMAN_START;
 window.GHOST_STARTS = GHOST_STARTS;
 window.PATROL_CORNERS = PATROL_CORNERS;
+window.PEN_EXIT_PATH = PEN_EXIT_PATH;
+window.PEN_BOB_TOP = PEN_BOB_TOP;
+window.PEN_BOB_BOTTOM = PEN_BOB_BOTTOM;

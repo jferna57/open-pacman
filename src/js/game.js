@@ -1,6 +1,7 @@
 // game.js
 // Estado y reglas. Depende de globals de maze.js: MAZE, TUNNEL_ROW,
-// PACMAN_START, GHOST_STARTS, PATROL_CORNERS.
+// PACMAN_START, GHOST_STARTS, PATROL_CORNERS, PEN_EXIT_PATH,
+// PEN_BOB_TOP, PEN_BOB_BOTTOM.
 
 const DIRS = {
   left: { x: -1, y: 0 },
@@ -28,6 +29,7 @@ function createGame() {
     score: 0,
     lives: 3,
     dotsRemaining: dots,
+    dotsEaten: 0, // sube 1 por cada dot comido; se reinicia al morir
     grid,
     pacman: {
       x: PACMAN_START.x,
@@ -43,6 +45,10 @@ function createGame() {
       speed: GHOST_SPEED,
       kind: g.kind,
       cornerIndex: 0, // solo lo usa 'patrol': alterna entre PATROL_CORNERS
+      releaseAt: g.releaseAt, // dots que hay que comer para sacarlo de la pen
+      mode: 'house',           // 'house' | 'leaving' | 'chase'
+      exitStep: 0,             // indice en PEN_EXIT_PATH, solo si mode === 'leaving'
+      bobDir: 'up',            // sentido del bobin, solo si mode === 'house'
     } ) ),
   };
 }
@@ -100,6 +106,7 @@ function movePacman( game ) {
       grid[ p.y ][ p.x ] = 0;
       game.score += 10;
       game.dotsRemaining--;
+      game.dotsEaten++;
     }
     // Si no puede seguir, se detiene en la celda.
     if ( !canMove( grid, p.x, p.y, p.dir, 'pacman' ) ) return;
@@ -119,6 +126,10 @@ function ghostTarget( game, g ) {
   const p = game.pacman;
   const px = Math.round( p.x );
   const py = Math.round( p.y );
+
+  // Saliendo de la pen: el unico objetivo es el siguiente waypoint. Tiene
+  // prioridad sobre 'kind'.
+  if ( g.mode === 'leaving' ) return PEN_EXIT_PATH[ g.exitStep ];
 
   // Persigue directo.
   if ( g.kind === 'hunter' ) return { x: px, y: py };
@@ -146,8 +157,12 @@ function ghostTarget( game, g ) {
 function decideGhost( game, g ) {
   const grid = game.grid;
 
+  // Saliendo de la pen se permite el giro de 180: un fantasma que acaba de
+  // subir mirando hacia arriba tiene que poder bajar al siguiente waypoint.
+  // En el resto de modos sigue valiendo la regla de no invertir.
+  const allowed = g.mode === 'leaving' ? () => true : ( dir ) => dir !== OPPOSITE[ g.dir ];
   const options = Object.keys( DIRS ).filter(
-    ( dir ) => dir !== OPPOSITE[ g.dir ] && canMove( grid, g.x, g.y, dir, 'ghost' )
+    ( dir ) => allowed( dir ) && canMove( grid, g.x, g.y, dir, 'ghost' )
   );
   // Sin salida (callejon): permitir el giro de 180.
   const choices = options.length ? options : [ '' + OPPOSITE[ g.dir ] ];
@@ -178,9 +193,40 @@ function moveGhost( game, g ) {
   const grid = game.grid;
   const width = grid[ 0 ].length;
 
+  // En la pen: bobin vertical y nada mas. La IA no interviene, no se miran
+  // kind, dir ni ningun objetivo. Al alcanzar su umbral de dots comidos el
+  // fantasma pasa a 'leaving' y deja de bobinar.
+  if ( g.mode === 'house' ) {
+    if ( game.dotsEaten >= g.releaseAt ) {
+      g.mode = 'leaving';
+      return;
+    }
+    if ( aligned( g.x ) && aligned( g.y ) ) {
+      g.x = Math.round( g.x );
+      g.y = Math.round( g.y );
+      // Invertir al tocar cada extremo. El bobin no cambia de columna.
+      if ( g.bobDir === 'up' && g.y <= PEN_BOB_TOP ) g.bobDir = 'down';
+      else if ( g.bobDir === 'down' && g.y >= PEN_BOB_BOTTOM ) g.bobDir = 'up';
+      g.dir = g.bobDir;
+    }
+    const bd = DIRS[ g.dir ];
+    g.x += bd.x * g.speed;
+    g.y += bd.y * g.speed;
+    return;
+  }
+
   if ( aligned( g.x ) && aligned( g.y ) ) {
     g.x = Math.round( g.x );
     g.y = Math.round( g.y );
+    // Saliendo de la pen: al pisar el waypoint se avanza. Al terminar la ruta
+    // el fantasma pasa a 'chase'. Unico criterio de salida: exitStep completo.
+    if ( g.mode === 'leaving' ) {
+      const wp = PEN_EXIT_PATH[ g.exitStep ];
+      if ( wp && g.x === wp.x && g.y === wp.y ) {
+        g.exitStep++;
+        if ( g.exitStep >= PEN_EXIT_PATH.length ) g.mode = 'chase';
+      }
+    }
     decideGhost( game, g );
     if ( !canMove( grid, g.x, g.y, g.dir, 'ghost' ) ) return;
   }
@@ -197,11 +243,19 @@ function resetPositions( game ) {
   p.y = PACMAN_START.y;
   p.dir = 'left';
   p.nextDir = null;
+  game.dotsEaten = 0;
   game.ghosts.forEach( ( g, i ) => {
+    // Progreso irreversible: un fantasma ya liberado conserva el umbral 0 y
+    // sale de inmediato en la siguiente vida, aunque dotsEaten vuelva a 0.
+    // Hay que leer mode ANTES de resetearlo.
+    if ( g.mode !== 'house' ) g.releaseAt = 0;
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
     g.cornerIndex = 0;
+    g.mode = 'house';
+    g.exitStep = 0;
+    g.bobDir = 'up';
   } );
 }
 
