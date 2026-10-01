@@ -42,6 +42,7 @@ function createGame() {
       dir: 'up',
       speed: GHOST_SPEED,
       kind: g.kind,
+      cornerIndex: 0, // solo lo usa 'patrol': alterna entre PATROL_CORNERS
     } ) ),
   };
 }
@@ -168,6 +169,7 @@ function resetPositions( game ) {
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
+    g.cornerIndex = 0;
   } );
 }
 
