@@ -1,6 +1,7 @@
 // game.js
 // Estado y reglas. Depende de globals de maze.js: MAZE, TUNNEL_ROW,
-// PACMAN_START, GHOST_STARTS, PATROL_CORNERS.
+// PACMAN_START, GHOST_STARTS, PATROL_CORNERS, PEN_EXIT_PATH,
+// PEN_BOB_TOP, PEN_BOB_BOTTOM.
 
 const DIRS = {
   left: { x: -1, y: 0 },
