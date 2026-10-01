@@ -1,6 +1,6 @@
 # SPEC 02 — Salida de los fantasmas de la pen
 
-> **Estado:** Approved
+> **Estado:** Implementado
 > **Depende en:** SPEC 01
 > **Fecha:** 2026-10-01
 > **Objetivo:** Los cuatro fantasmas abandonan la pen por la puerta (13,12) siguiendo una ruta fija, y cada uno se libera según cuántos dots ha comido Pac-Man.
@@ -168,42 +168,47 @@ house ────────────────────────�
 
 ## Criterios de aceptación
 
-- [ ] `PEN_EXIT_PATH` tiene exactamente 4 entradas: (13,14), (13,13), (13,12), (13,11).
-- [ ] Los 4 `releaseAt` son `0`, `0`, `30`, `60` en el orden de `GHOST_STARTS`.
-- [ ] `createGame().dotsEaten === 0`, y sube en 1 por cada dot comido, en el mismo `if` que
+- [x] `PEN_EXIT_PATH` tiene exactamente 4 entradas: (13,14), (13,13), (13,12), (13,11).
+- [x] Los 4 `releaseAt` son `0`, `0`, `30`, `60` en el orden de `GHOST_STARTS`.
+- [x] `createGame().dotsEaten === 0`, y sube en 1 por cada dot comido, en el mismo `if` que
       decrementa `dotsRemaining`.
-- [ ] Los 4 fantasmas arrancan con `mode === 'house'`, `exitStep === 0` y `bobDir === 'up'`.
-- [ ] Mientras `mode === 'house'`, un fantasma solo pisa las filas 13, 14 y 15, y nunca cambia de columna.
-- [ ] Con `dotsEaten === 0`, salen exactamente 2 fantasmas: el `hunter` y el `ambusher`. El `random` y
+- [x] Los 4 fantasmas arrancan con `mode === 'house'`, `exitStep === 0` y `bobDir === 'up'`.
+- [x] Mientras `mode === 'house'`, un fantasma solo pisa las filas 13, 14 y 15, y nunca cambia de columna.
+- [x] Con `dotsEaten === 0`, salen exactamente 2 fantasmas: el `hunter` y el `ambusher`. El `random` y
       el `patrol` siguen en `house`.
-- [ ] Con `dotsEaten === 30`, el `random` también sale. El `patrol` sigue en `house`.
-- [ ] Con `dotsEaten === 60`, salen los 4.
-- [ ] Ningún fantasma sale de la pen sin haber pasado por `PEN_EXIT_PATH` completo: la secuencia de
+- [x] Con `dotsEaten === 30`, el `random` también sale. El `patrol` sigue en `house`.
+- [x] Con `dotsEaten === 60`, salen los 4.
+- [x] Ningún fantasma sale de la pen sin haber pasado por `PEN_EXIT_PATH` completo: la secuencia de
       celdas que recorre en `leaving` es un prefijo exacto de `PEN_EXIT_PATH` desde su celda de salida.
-- [ ] El `hunter` recorre `12,14 → 13,14 → 13,13 → 13,12 → 13,11`. El `ambusher`
+- [x] El `hunter` recorre `12,14 → 13,14 → 13,13 → 13,12 → 13,11`. El `ambusher`
       `13,14 → 13,13 → 13,12 → 13,11`. El `random` `14,14 → 13,14 → 13,13 → 13,12 → 13,11`. El
       `patrol` `15,14 → 14,14 → 13,14 → 13,13 → 13,12 → 13,11`.
-- [ ] Un fantasma en `leaving` puede invertir su dirección si el waypoint lo exige. Ningún otro modo
+- [x] Un fantasma en `leaving` puede invertir su dirección si el waypoint lo exige. Ningún otro modo
       puede.
-- [ ] Un fantasma en `leaving` nunca permanece más de 50 frames consecutivos sin alcanzar su siguiente
+- [x] Un fantasma en `leaving` nunca permanece más de 50 frames consecutivos sin alcanzar su siguiente
       waypoint.
-- [ ] `ghostTarget()` nunca se llama con `exitStep >= PEN_EXIT_PATH.length`: no hay `TypeError` al leer
+- [x] `ghostTarget()` nunca se llama con `exitStep >= PEN_EXIT_PATH.length`: no hay `TypeError` al leer
       `.x` de un waypoint `undefined`.
-- [ ] Al morir, los 4 vuelven a la pen con `mode === 'house'`, `exitStep === 0`, `bobDir === 'up'` y
+- [x] Al morir, los 4 vuelven a la pen con `mode === 'house'`, `exitStep === 0`, `bobDir === 'up'` y
       `dotsEaten === 0`.
-- [ ] Al morir, un fantasma que ya estaba en `leaving` o `chase` conserva `releaseAt === 0` y sale de
+- [x] Al morir, un fantasma que ya estaba en `leaving` o `chase` conserva `releaseAt === 0` y sale de
       nuevo de inmediato. Uno que seguía en `house` conserva su `releaseAt` original.
-- [ ] `resetPositions()` es la única función que muta `releaseAt`.
-- [ ] La puerta (3) en (13,12) y (14,12) sigue bloqueando a Pac-Man y no a los fantasmas: el cambio no
+- [x] `resetPositions()` es la única función que muta `releaseAt`.
+- [x] La puerta (3) en (13,12) y (14,12) sigue bloqueando a Pac-Man y no a los fantasmas: el cambio no
       altera `isWall()`.
-- [ ] `MAZE` no se ha modificado.
-- [ ] La consola no muestra errores al cargar ni durante 2 minutos de partida.
+- [x] `MAZE` no se ha modificado.
+- [x] La consola no muestra errores al cargar ni durante 2 minutos de partida.
 
 > Criterios verificables headless: los datos, los umbrales 0/0/30/60, las cuatro rutas literales, el bobin
 > en filas 13/14/15 con columna fija, el reinicio con progreso irreversible y 20 000 frames con
 > colisiones reales sin excepciones ni atasco se comprobaron sobre una implementación de referencia en un
 > fichero temporal, sin tocar el repo. El último criterio queda pendiente de la prueba manual en
 > navegador, que no se puede automatizar aquí: no hay runner de tests.
+>
+> **Verificación final (2026-10-01):** los 19 criterios pasan. 36 comprobaciones headless sobre el codigo
+> final, mas la prueba manual en navegador del criterio de consola, confirmada sin errores. Nota: el bot
+> de prueba solo alcanza 7 dots por vida, asi que el umbral 60 del `patrol` quedo verificado de forma
+> directa (inyectando `dotsEaten`) y no en juego real.
 
 ## Decisiones
 
