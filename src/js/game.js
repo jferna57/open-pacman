@@ -127,6 +127,10 @@ function ghostTarget( game, g ) {
   const px = Math.round( p.x );
   const py = Math.round( p.y );
 
+  // Saliendo de la pen: el unico objetivo es el siguiente waypoint. Tiene
+  // prioridad sobre 'kind'.
+  if ( g.mode === 'leaving' ) return PEN_EXIT_PATH[ g.exitStep ];
+
   // Persigue directo.
   if ( g.kind === 'hunter' ) return { x: px, y: py };
 
@@ -210,6 +214,15 @@ function moveGhost( game, g ) {
   if ( aligned( g.x ) && aligned( g.y ) ) {
     g.x = Math.round( g.x );
     g.y = Math.round( g.y );
+    // Saliendo de la pen: al pisar el waypoint se avanza. Al terminar la ruta
+    // el fantasma pasa a 'chase'. Unico criterio de salida: exitStep completo.
+    if ( g.mode === 'leaving' ) {
+      const wp = PEN_EXIT_PATH[ g.exitStep ];
+      if ( wp && g.x === wp.x && g.y === wp.y ) {
+        g.exitStep++;
+        if ( g.exitStep >= PEN_EXIT_PATH.length ) g.mode = 'chase';
+      }
+    }
     decideGhost( game, g );
     if ( !canMove( grid, g.x, g.y, g.dir, 'ghost' ) ) return;
   }
