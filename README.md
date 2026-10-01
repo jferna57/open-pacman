@@ -1,4 +1,4 @@
-## PacMan like!!
+## PacMan like !
 
 Vamos a crear un juego de PacMan como el juego de PacMan original, pero con una interfaz gráfica más moderna y sencilla.
 
@@ -8,6 +8,6 @@ Vamos a crear un juego de PacMan como el juego de PacMan original, pero con una 
 - HTML
 - CSS
 
-# Spec Driven Development
+# Spec Driven Development /SDD
 
 El proyecto sirve para aprender este enfoque de desarrollo.
